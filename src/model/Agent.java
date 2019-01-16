@@ -1,6 +1,9 @@
 
 package model;
 
+import javafx.geometry.Pos;
+
+import javax.crypto.spec.PSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +23,7 @@ public class Agent implements Runnable{
     private int sizeOfMemory;
     private boolean stop;
 
-    public Agent(int id, int x, int y, int sizeOfMemory) {
+    public Agent(int id, int x, int y, int sizeOfMemory, int kM, int kP) {
         grid = Grid.getInstance();
 
         this.id = id;
@@ -30,6 +33,8 @@ public class Agent implements Runnable{
         this.sizeOfMemory = sizeOfMemory;
         this.memory = new ArrayList<>();
         this.stop=false;
+        this.kM = kM;
+        this.kP = kP;
     }
 
 
@@ -62,11 +67,15 @@ public class Agent implements Runnable{
         double fd = calcFd();
         double pd = calcPd(fd);
         double random = Math.random();
+        Position newPos = null;
 
         if(random>pd){
-            
+            newPos = getRandomDirection(x,y);
+            grid.drop(currentObject , newPos.getX(),getY());
+            return true;
         }
 
+        return false;
     }
 
 
@@ -95,11 +104,11 @@ public class Agent implements Runnable{
     }
 
     private double calcPp(double fp){
-        return Math.pow(kP/(kP+fp),2);
+        return Math.pow(fp/(kP+fp),2);
     }
 
     private double calcPd(double fd){
-        return Math.pow(kM/(kM+fd),2);
+        return Math.pow(fd/(kM+fd),2);
     }
 
     private int getNumberOf(ArrayList<AtomicInteger> listElement, AtomicInteger element){
