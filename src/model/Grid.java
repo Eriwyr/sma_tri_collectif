@@ -41,14 +41,24 @@ public class Grid extends Observable {
 
         Random random = new Random();
         boolean isPut = false;
-        for (int c = 0; c <200; c++) {
+        AtomicInteger element = new AtomicInteger(1);
+
+        for (int c = 0; c <400; c++) {
             //int randomNum = rand.nextInt((max - min) + 1) + min;
 
             int x = random.nextInt((49)+1);
             int y =random.nextInt((49)+1);
-            //if(tab.get(y).get)
 
+            while(getInstance().get(x,y).get()!=0){
+                x = random.nextInt((49)+1);
+                y =random.nextInt((49)+1);
+            }
+            
+            tab.get(y).set(x,element);
 
+            if(c==200){
+                element = new AtomicInteger(2);
+            }
         }
 
         getInstance().setChanged();
@@ -75,7 +85,7 @@ public class Grid extends Observable {
 
     public boolean moveTo(Agent agent, int x, int y) {
         if (x<49 && y<49 && x>0 && y>0) {
-
+            
             Position newPosition = new Position(x, y);
 
             synchronized (tab) {
