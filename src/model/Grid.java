@@ -104,20 +104,31 @@ public class Grid extends Observable {
         }
     }
 
-    public void drop(AtomicInteger a, int x, int y) {
+    public boolean drop(AtomicInteger a, int x, int y) {
         synchronized (tab) {
+            if (tab.get(y).get(y) == new AtomicInteger(0)) {
                 tab.get(y).set(x, a);
+            } else {
+                return false;
             }
-        getInstance().setChanged();
-        getInstance().notifyObservers();
+            getInstance().setChanged();
+            getInstance().notifyObservers();
+            return true;
         }
+    }
 
-    public void take(int x, int y) {
+    public boolean take(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            tab.get(y).set(x, new AtomicInteger(0));
+            if(a ==tab.get(y).get(y)) {
+                tab.get(y).set(x, new AtomicInteger(0));
+            } else {
+                return false;
+            }
         }
         getInstance().setChanged();
         getInstance().notifyObservers();
+        return true;
+
     }
 
 

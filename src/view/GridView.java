@@ -3,6 +3,7 @@ package view;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import model.Cell;
 import model.Grid;
 
 import java.util.Observable;
@@ -25,13 +26,13 @@ public class GridView implements Observer {
     public void update(Observable o, Object arg) {
         //GridCase[][] grid = Grid.getGrid();
         Vector<Vector<AtomicInteger>> cells = Grid.getTab();
-        CellView[][] cellViews = new CellView[50][50];
+        Cell[][] cellViews = new Cell[50][50];
 
         for (int i = 0; i< cells.size(); i++) {
             Vector row = cells.get(i);
             for (int j = 0; j<row.size(); j++  ) {
 
-                cellViews[j][i] = new CellView(i , j , ((AtomicInteger)row.get(j)).get());
+                cellViews[j][i] = new Cell(i , j , ((AtomicInteger)row.get(j)).get());
             }
         }
 

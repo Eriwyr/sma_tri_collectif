@@ -4,8 +4,6 @@ package model;
 import org.w3c.dom.ls.LSInput;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,7 +33,9 @@ public class Agent implements Runnable{
 
     public boolean takeObject(){
         double fp = calcFp(memory.get(0));
+
         double random = Math.random();
+
         if(random>fp){
             grid.take(x,y);
             currentObject = memory.get(0);

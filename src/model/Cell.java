@@ -1,6 +1,6 @@
-package view;
+package model;
 
-public class CellView {
+public class Cell {
 
     private int x;
 
@@ -8,7 +8,7 @@ public class CellView {
 
     private int content;
 
-    public CellView(int x, int y, int content) {
+    public Cell(int x, int y, int content) {
         this.x = x;
         this.y = y;
         this.content = content;
