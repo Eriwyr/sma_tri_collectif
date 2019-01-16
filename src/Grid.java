@@ -1,5 +1,10 @@
+import javafx.geometry.Pos;
+
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.Vector;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -8,16 +13,33 @@ public class Grid {
 
     private static Grid instance;
 
+    private Vector<Position> positionsAgents;
+
     private Lock lock = new ReentrantLock();
 
-    private final Vector<Vector<Object>> tab = new Vector<Vector<Object>>(50);
+    private final Vector<Vector<AtomicInteger>> tab = new Vector<Vector<AtomicInteger>>(50);
 
-    private Grid() {
+    private Grid(List<Agent> agents) {
+        // init grid
         for (int i =0; i<50; i++) {
             tab.set(i, new Vector<>(50));
             for (int j = 0; j<50; j++) {
                 tab.get(j).set(i, new AtomicInteger(0));
             }
+        }
+
+        //init positions
+        for(Agent agent :agents) {
+            positionsAgents.add(agent.getId(), new Position(agent.getX(), agent.getY()));
+        }
+    }
+
+    private void randomInit() {
+        Random random = new Random();
+        List xA = new ArrayList();
+
+        for (int xa = 0; xa<20; xa ++){
+            xA.add(ThreadLocalRandom.current().nextInt(0, 50));
         }
     }
 
@@ -30,20 +52,22 @@ public class Grid {
 
     public boolean moveTo(Agent agent, int x, int y) {
 
+        Position newPosition = new Position(x, y);
         synchronized (tab) {
-            Object cell = tab.get(y).get(x);
-            if (cell.getClass() != AtomicInteger.class || ((AtomicInteger) cell).get() != 0) {
-            return false;
-            } else {
-                tab.get(y).set(x, agent);
-                return true;
+            for (Position position : positionsAgents) {
+                if (newPosition == position) {
+                    return false;
+                }
             }
+
+            positionsAgents.set(agent.getId(), newPosition);
+            return true;
         }
 
     }
 
     public ArrayList getNeighbourhood(int x, int y) {
-        ArrayList<Object> list = new ArrayList<Object>();
+        ArrayList<AtomicInteger> list = new ArrayList<AtomicInteger>();
         synchronized (tab) {
             list.add(tab.get(y+1).get(x));
             list.add(tab.get(y).get(x+1));
