@@ -35,6 +35,7 @@ public class Agent implements Runnable{
         double random = Math.random();
         if(random>fp){
             grid.take(x,y);
+            currentObject = memory.get(0);
             return true;
         }
         return false;
@@ -46,6 +47,8 @@ public class Agent implements Runnable{
 
         if(random>fd){
             grid.drop(this.currentObject, x, y);
+            memory.remove(0);
+            return true;
         }
         return false;
     }
@@ -139,6 +142,7 @@ public class Agent implements Runnable{
                 break;
         }
     }
+    
     public int getX() {
         return x;
     }
@@ -180,8 +184,14 @@ public class Agent implements Runnable{
 
         while(!stop){
             goToRandomDirection();
-            
+            addMemoryElement(grid.get(x,y));
 
+            if(!grid.get(x,y).equals(0)){
+                takeObject();
+            }
+            else if(currentObject!=null){
+                dropObject();
+            }
         }
 
     }
