@@ -32,9 +32,11 @@ public class Agent implements Runnable{
 
 
     public boolean takeObject(){
+
         double random = Math.random();
         double bestFp = 0;
         double tmpFp = 0;
+
         Map.Entry<Position,AtomicInteger> tmpElement = null;
         HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhoodTake(x,y);
 
@@ -75,7 +77,7 @@ public class Agent implements Runnable{
         return false;
     }
 
-    
+
 
     public static Grid getGrid() {
         return grid;
@@ -144,7 +146,7 @@ public class Agent implements Runnable{
             switch (random){
                 case 0:
 
-
+                    // east
                     if(x<50
                         && ((AtomicInteger)grid.get(x+1, y)).get()==0
                         && !Grid.getPositionsAgents().contains(new Position(x+1, y)) ) {
@@ -157,6 +159,8 @@ public class Agent implements Runnable{
                     }
                     break;
                 case 1:
+
+                    // south
                     if( y< 50
                         && ((AtomicInteger)grid.get(x, y+1)).get()==0
                         && !Grid.getPositionsAgents().contains(new Position(x, y+1)) ) {
@@ -170,6 +174,7 @@ public class Agent implements Runnable{
 
                     break;
                 case 2:
+                    //west
                     if(x>0
                         && ((AtomicInteger)grid.get(x-1, y)).get()==0
                         && !Grid.getPositionsAgents().contains(new Position(x-1, y)) ) {
@@ -184,6 +189,7 @@ public class Agent implements Runnable{
 
                     break;
                 case 3:
+                    //north
                     if(y<0
                         && ((AtomicInteger)grid.get(x, y-1)).get()==0
                         && !Grid.getPositionsAgents().contains(new Position(x, y-1)) ) {
@@ -246,12 +252,18 @@ public class Agent implements Runnable{
 
 
         while(!stop){
+
             goToRandomDirection();
-            if(!grid.get(x,y).equals(0)){
+
+            if(currentObject!= new AtomicInteger(0)){
+
                 takeObject();
+
             }
-            else if(currentObject!=null){
+            else {
+
                 dropObject();
+
             }
         }
 
