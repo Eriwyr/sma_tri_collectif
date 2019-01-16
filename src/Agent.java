@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,7 +9,7 @@ public class Agent {
     private int x;
     private int y;
     private AtomicInteger currentObject;
-    private List<AtomicInteger> memory;
+    private ArrayList<AtomicInteger> memory;
     private int sizeOfMemory;
 
     public Agent(int x, int y, AtomicInteger currentObject, int sizeOfMemory) {
@@ -20,28 +21,36 @@ public class Agent {
     }
 
 
-    public void takeObject(){
+    public boolean takeObject(){
+        double fp = calcFp(memory.get(0));
+        double random = Math.random();
 
+
+        return random > fp;
     }
 
-    public void dropObject(){
+    public boolean dropObject(){
+        double fd = calcFd();
+        double random = Math.random();
 
+        return random > fd;
     }
-    
+
     public void moveToEast(){
+        grid.moveToEast();
 
     }
 
     public void moveToWest(){
-
+        grid.moveToWest();
     }
 
     public void moveToNorth(){
-
+        grid.moveToNorth();
     }
 
     public void moveToSouth(){
-
+        grid.moveToSouth();
     }
 
     public static Grid getGrid() {
@@ -50,6 +59,33 @@ public class Agent {
 
     public static void setGrid(Grid grid) {
         Agent.grid = grid;
+    }
+
+    private double calcFp(AtomicInteger gridElement){
+
+        double fp = getNumberOf(this.memory, gridElement) / (double)this.memory.size();
+
+        return fp;
+
+    }
+
+    private double calcFd(){
+        double fd =0;
+
+        fd= getNumberOf(grid.getNeighbourhood,this.currentObject);
+        return  fd;
+
+    }
+
+    private int getNumberOf(ArrayList<AtomicInteger> listElement, AtomicInteger element){
+        int number = 0;
+        for (AtomicInteger currentElement:listElement) {
+            if (currentElement.equals(element)){
+                number++;
+            }
+
+        }
+        return number;
     }
 
     public int getX() {
@@ -76,11 +112,11 @@ public class Agent {
         this.currentObject = currentObject;
     }
 
-    public List<AtomicInteger> getMemory() {
+    public ArrayList<AtomicInteger> getMemory() {
         return memory;
     }
 
-    public void setMemory(List<AtomicInteger> memory) {
+    public void setMemory(ArrayList<AtomicInteger> memory) {
         this.memory = memory;
     }
 }
