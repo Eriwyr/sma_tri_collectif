@@ -13,6 +13,8 @@ public class Agent implements Runnable{
     private static Grid grid;
     private int x;
     private int y;
+    private int kP;
+    private int kM;
     private AtomicInteger currentObject;
     private ArrayList<AtomicInteger> memory;
     private int sizeOfMemory;
@@ -124,6 +126,14 @@ public class Agent implements Runnable{
 
         double fd= getNumberOf(valuesList,this.currentObject)/(double)this.memory.size();
         return  fd;
+    }
+
+    private double calcPp(double fp){
+        return Math.pow(kP/(kP+fp),2);
+    }
+
+    private double calcPd(double fd){
+        return Math.pow(kM/(kM+fd),2);
     }
 
     private int getNumberOf(ArrayList<AtomicInteger> listElement, AtomicInteger element){
