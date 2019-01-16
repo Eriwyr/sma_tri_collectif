@@ -16,7 +16,7 @@ public class Grid {
         for (int i =0; i<50; i++) {
             tab.set(i, new Vector<>(50));
             for (int j = 0; j<50; j++) {
-                tab.get(j).set(i, 0);
+                tab.get(j).set(i, new AtomicInteger(0));
             }
         }
     }
@@ -50,6 +50,18 @@ public class Grid {
             list.add(tab.get(y-1).get(x));
             list.add(tab.get(y).get(x-1));
             return list;
+        }
+    }
+
+    public void drop(AtomicInteger a, int x, int y) {
+        synchronized (tab) {
+                tab.get(y).set(x, a);
+            }
+        }
+
+    public void take(int x, int y) {
+        synchronized (tab) {
+            tab.get(y).set(x, new AtomicInteger(0));
         }
     }
 }
