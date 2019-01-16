@@ -59,24 +59,14 @@ public class Agent implements Runnable{
     }
 
     public boolean dropObject(){
-
+        double fd = calcFd();
+        double pd = calcPd(fd);
         double random = Math.random();
-        double fd = 0;
 
-        fd = calcFd();
-
-        if(fd>random){
-
+        if(random>pd){
+            
         }
 
-
-
-        if(random>fd){
-            grid.drop(this.currentObject, x, y);
-            memory.remove(0);
-            return true;
-        }
-        return false;
     }
 
 
