@@ -159,13 +159,20 @@ public class Grid extends Observable {
     }
 
     public boolean take(AtomicInteger a, int x, int y) {
+        System.out.println(("taking"));
         synchronized (tab) {
-            if(tab.get(y).get(x).get() == a.get()) {
+            if (tab.get(y).get(x).get() == a.get()) {
+
                 tab.get(y).set(x, new AtomicInteger(0));
+                System.out.println("removed");
+
+                System.out.println("element removved : "+ tab.get(y).get(x).get());
             } else {
+                System.out.println("retured false");
                 return false;
             }
         }
+        System.out.println("returned true " +x+y );
         getInstance().setChanged();
         getInstance().notifyObservers();
         return true;

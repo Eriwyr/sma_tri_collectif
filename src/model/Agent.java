@@ -4,6 +4,7 @@ package model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,6 +38,7 @@ public class Agent implements Runnable{
 
     private void takeObject(){
 
+        System.out.println("memory "+this.memory);
         double bestPp = 0;
         double tmpPp = 0;
         double tmpFp =0;
@@ -44,13 +46,18 @@ public class Agent implements Runnable{
         Map.Entry<Position,AtomicInteger> tmpElement = null;
         HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhoodTake(x,y);
 
+        int count = 0;
         for(Map.Entry<Position,AtomicInteger> element : neighbourhood.entrySet()) {
 
             if(element.getValue().get() != 0){
-                tmpFp = calcFp(element.getValue());
+
+                tmpFp = calcFp(element.getValue(),neighbourhood );
                 double pp = calcPp(tmpFp);
 
+                System.out.println("pp : "+pp);
+
                 if(tmpPp > bestPp){
+                    System.out.println("tmpPp > bestPp");
                     bestPp  = tmpPp;
                     tmpElement  = element;
                 }
@@ -58,11 +65,25 @@ public class Agent implements Runnable{
 
             double random = Math.random();
 
-            if(bestPp > random){
-                if(grid.take(tmpElement.getValue(), tmpElement.getKey().getX(), tmpElement.getKey().getY())){
-                    currentObject = tmpElement.getValue();
+            if( this.memory.size() == 0 ){
+                Position position = getRandomDirection(x, y);
+                AtomicInteger chosen = grid.get(position.getX(), position.getY());
+
+                System.out.println("memory size = 0");
+                if (chosen.get()!= 0 && grid.take(chosen, position.getX(), position.getY())) {
+                    currentObject = chosen;
+                    addMemoryElement(currentObject);
+                    System.out.println("currentObject " +currentObject);
                 }
             }
+            else if(bestPp > random){
+
+                if(grid.take(tmpElement.getValue(), tmpElement.getKey().getX(), tmpElement.getKey().getY())){
+                    currentObject = tmpElement.getValue();
+                    addMemoryElement(currentObject);
+                }
+            }
+            count++;
         }
     }
 
@@ -92,10 +113,11 @@ public class Agent implements Runnable{
         Agent.grid = grid;
     }
 
-    private double calcFp(AtomicInteger gridElement){
-        ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(grid.getNeighbourhood(x,y).values());
+    private double calcFp(AtomicInteger gridElement, HashMap<Position,AtomicInteger> map){
+        ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(map.values());
 
         double fp = getNumberOf(valuesList,gridElement) / (double)this.memory.size();
+
         return fp;
 
     }
@@ -108,10 +130,14 @@ public class Agent implements Runnable{
     }
 
     private double calcPp(double fp){
+        if(this.memory.size() == 0) {
+            return Math.random();
+        }
         return Math.pow(fp/(kP+fp),2);
     }
 
     private double calcPd(double fd){
+
         return Math.pow(fd/(kM+fd),2);
     }
 
@@ -198,7 +224,7 @@ public class Agent implements Runnable{
                     break;
                 case 3:
                     //north
-                    if(y<0
+                    if(y>0
                         && ((AtomicInteger)grid.get(x, y-1)).get()==0
                         && !Grid.getPositionsAgents().contains(new Position(x, y-1)) ) {
 
@@ -261,12 +287,12 @@ public class Agent implements Runnable{
             }
 
             goToRandomDirection();
-/*
-            if(currentObject== new AtomicInteger(0)){
+
+            if(currentObject.get() == 0 ){
 
                 takeObject();
 
-            }
+            }/*
             else {
 
                 dropObject();
