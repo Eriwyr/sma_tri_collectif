@@ -4,11 +4,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import model.Grid;
-import model.GridCase;
-import model.ObjectType;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GridView implements Observer {
@@ -25,13 +24,23 @@ public class GridView implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         //GridCase[][] grid = Grid.getGrid();
-        AtomicInteger cell = Grid.get
-        double caseWidth = 800.0/grid.length;
+        Vector<Vector<AtomicInteger>> cells = Grid.getTab();
+        CellView[][] cellViews = new CellView[50][50];
 
-        for(int i=0; i<grid.length; i++)
+        for (int i = 0; i< cells.size(); i++) {
+            Vector row = cells.get(i);
+            for (int j = 0; j<row.size(); j++  ) {
+
+                cellViews[j][i] = new CellView(i , j , ((AtomicInteger)row.get(j)).get());
+            }
+        }
+
+        double caseWidth = 800.0/cellViews.length;
+
+        for(int i=0; i<cellViews.length; i++)
         {
-            double caseHeight = 800.0/grid[i].length;
-            for(int j=0; j<grid[i].length; j++)
+            double caseHeight = 800.0/cellViews[i].length;
+            for(int j=0; j<cellViews[i].length; j++)
             {
                 double caseX = i*caseWidth;
                 double caseY = j*caseHeight;
@@ -40,12 +49,12 @@ public class GridView implements Observer {
                 gc.strokeLine(caseX+caseWidth, caseY+caseHeight, caseX, caseY+caseHeight);
                 gc.strokeLine(caseX, caseY+caseHeight, caseX, caseY);
 
-                if(grid[i][j].getObjectType() == ObjectType.OBJECTA)
+                if(cellViews[i][j].getContent() == 1)
                 {
                     gc.setFill(Color.BLUE);
                     gc.fillOval(caseX+(caseWidth/4), caseY+(caseHeight/4), caseWidth/2, caseHeight/2);
                 }
-                else if(grid[i][j].getObjectType() == ObjectType.OBJECTB)
+                else if(cellViews[i][j].getContent() == 2)
                 {
                     gc.setFill(Color.RED);
                     gc.fillOval(caseX+(caseWidth/4), caseY+(caseHeight/4), caseWidth/2, caseHeight/2);

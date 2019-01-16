@@ -16,6 +16,6 @@ public class GridController {
     void initialize() {
         this.gridView = new GridView(gridCanvas);
         Grid.addNewObserver(gridView);
-        Grid.initialize();
+        Grid.init();
     }
 }

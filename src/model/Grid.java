@@ -14,21 +14,30 @@ public class Grid extends Observable {
 
     private Lock lock = new ReentrantLock();
 
-    private final Vector<Vector<AtomicInteger>> tab = new Vector<Vector<AtomicInteger>>(50);
+    private static Vector<Vector<AtomicInteger>> tab = new Vector<>(50);
 
     private List<Agent> agents ;
 
+
     private Grid() {
+    }
+
+    public static void init() {
         // init grid
+        tab = new Vector<>(50);
+
+
         for (int i =0; i<50; i++) {
-            tab.set(i, new Vector<>(50));
+            tab.add(i, new Vector<>(50));
             for (int j = 0; j<50; j++) {
-                tab.get(j).set(i, new AtomicInteger(0));
+                tab.get(i).add(j, new AtomicInteger(0));
             }
         }
 
+
         getInstance().setChanged();
         getInstance().notifyObservers();
+
     }
 
     public void setAgents(List<Agent> agents) {
@@ -111,4 +120,7 @@ public class Grid extends Observable {
 
     }
 
+    public static Vector<Vector<AtomicInteger>> getTab() {
+        return tab;
+    }
 }
