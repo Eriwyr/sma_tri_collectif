@@ -84,8 +84,6 @@ public class Grid extends Observable {
                         return false;
                     }
                 }
-                AtomicInteger cell =tab.get(y).get(x);
-
 
                 if (tab.get(y).get(x).get() == 0) {
                     positionsAgents.set(agent.getId(), newPosition);
@@ -104,7 +102,7 @@ public class Grid extends Observable {
         HashMap<Position, AtomicInteger> map = new HashMap<Position, AtomicInteger>();
         synchronized (tab) {
             //north
-            map.put(new Position(y-1, x), tab.get(y+1).get(x));
+            map.put(new Position(y-1, x), tab.get(y-1).get(x));
             // north - east
             map.put(new Position(y-1, x+1), tab.get(y-1).get(x+1));
             // east
@@ -139,7 +137,7 @@ public class Grid extends Observable {
 
     public boolean drop(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            if (tab.get(y).get(y).get() == 0) {
+            if (tab.get(y).get(x).get() == 0) {
                 tab.get(y).set(x, a);
             } else {
                 return false;
@@ -152,7 +150,7 @@ public class Grid extends Observable {
 
     public boolean take(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            if(tab.get(y).get(y).get() == a.get()) {
+            if(tab.get(y).get(x).get() == a.get()) {
                 tab.get(y).set(x, new AtomicInteger(0));
             } else {
                 return false;

@@ -138,25 +138,24 @@ public class Agent implements Runnable{
     }
 
     private Position getRandomDirection(int x, int y) {
-        int random = ThreadLocalRandom.current().nextInt(0, 3);
+        int random = ThreadLocalRandom.current().nextInt(0, 4);
 
         switch (random) {
             case 0:
                 return new Position(x + 1, y);
             case 1:
-                return new Position(x + 1, y);
+                return new Position(x , y+1);
             case 2:
-                return new Position(x + 1, y);
+                return new Position(x - 1, y);
             case 3:
-                return new Position(x + 1, y);
+                return new Position(x , y-1);
         }
         return null;
     }
 
     private void goToRandomDirection(){
-        boolean hasChosenDirection = false;
 
-            int random = ThreadLocalRandom.current().nextInt(0, 3);
+            int random = ThreadLocalRandom.current().nextInt(0, 4);
 
             switch (random){
 
@@ -182,7 +181,6 @@ public class Agent implements Runnable{
                         //moveToSouth();
                         if(grid.moveTo(this,x,y+1)){
                             this.y = this.y+1;
-                            hasChosenDirection = true;
                         }
                     }
 
@@ -196,7 +194,6 @@ public class Agent implements Runnable{
                         // moveToWest();
                         if(grid.moveTo(this,x-1,y)){
                             this.x = this.x-1;
-                            hasChosenDirection = true;
                         }
 
                     }
@@ -211,7 +208,6 @@ public class Agent implements Runnable{
                         //moveToNorth();
                         if(grid.moveTo(this,x,y-1)){
                             this.y = this.y-1;
-                            hasChosenDirection = true;
                         }
                     }
                     break;
@@ -220,7 +216,7 @@ public class Agent implements Runnable{
 
     }
 
-    public int getX() {
+    int getX() {
         return x;
     }
 
@@ -228,7 +224,7 @@ public class Agent implements Runnable{
         this.x = x;
     }
 
-    public int getY() {
+    int getY() {
         return y;
     }
 
