@@ -1,9 +1,9 @@
 
 package model;
 
-import org.w3c.dom.ls.LSInput;
-
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,21 +32,40 @@ public class Agent implements Runnable{
 
 
     public boolean takeObject(){
-        double fp = calcFp(memory.get(0));
-
         double random = Math.random();
+        double bestFp = 0;
+        double tmpFp = 0;
+        Map.Entry<Position,AtomicInteger> tmpElement = null;
+        HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhoodTake(x,y);
 
-        if(random>fp){
-            grid.take(x,y);
-            currentObject = memory.get(0);
-            return true;
+        for(Map.Entry<Position,AtomicInteger> element : neighbourhood.entrySet()) {
+            if(!element.getValue().equals(new AtomicInteger(0))){
+                tmpFp = calcFp(element.getValue());
+                if(tmpFp > bestFp){
+                    bestFp  = tmpFp;
+                    tmpElement  = element;
+                }
+            }
+            if(bestFp > random){
+                if(grid.take(tmpElement.getValue(), tmpElement.getKey().getX(), tmpElement.getKey().getY())){
+                    currentObject = tmpElement.getValue();
+                }
+            }
         }
-        return false;
     }
 
     public boolean dropObject(){
-        double fd = calcFd();
+
         double random = Math.random();
+        double fd = 0;
+
+        fd = calcFd();
+
+        if(fd>random){
+
+        }
+
+
 
         if(random>fd){
             grid.drop(this.currentObject, x, y);
@@ -67,19 +86,18 @@ public class Agent implements Runnable{
     }
 
     private double calcFp(AtomicInteger gridElement){
+        ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(grid.getNeighbourhood(x,y).values());
 
-        double fp = getNumberOf(this.memory, gridElement) / (double)this.memory.size();
-
+        double fp = getNumberOf(valuesList,gridElement) / (double)this.memory.size();
         return fp;
 
     }
 
     private double calcFd(){
-        double fd =0;
+        ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(grid.getNeighbourhood(x,y).values());
 
-        fd= getNumberOf(grid.getNeighbourhood(x,y),this.currentObject);
+        double fd= getNumberOf(valuesList,this.currentObject)/(double)this.memory.size();
         return  fd;
-
     }
 
     private int getNumberOf(ArrayList<AtomicInteger> listElement, AtomicInteger element){
@@ -94,11 +112,27 @@ public class Agent implements Runnable{
     }
 
     private void addMemoryElement(AtomicInteger element){
-        if(memory.size()==10){
+        if(memory.size()==sizeOfMemory){
             memory.remove(memory.size()-1);
         }
         memory.add(0,element);
 
+    }
+
+    private Position getRandomDirection(int x, int y) {
+        int random = ThreadLocalRandom.current().nextInt(0, 3);
+
+        switch (random) {
+            case 0:
+                return new Position(x + 1, y);
+            case 1:
+                return new Position(x + 1, y);
+            case 2:
+                return new Position(x + 1, y);
+            case 3:
+                return new Position(x + 1, y);
+        }
+        return null;
     }
 
     private void goToRandomDirection(){
@@ -165,7 +199,7 @@ public class Agent implements Runnable{
         }
 
     }
-    
+
     public int getX() {
         return x;
     }
@@ -213,8 +247,6 @@ public class Agent implements Runnable{
 
         while(!stop){
             goToRandomDirection();
-            addMemoryElement(grid.get(x,y));
-
             if(!grid.get(x,y).equals(0)){
                 takeObject();
             }
