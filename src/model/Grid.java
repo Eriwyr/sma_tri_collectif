@@ -1,5 +1,7 @@
 package model;
 
+import javafx.geometry.Pos;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +44,7 @@ public class Grid extends Observable {
 
     public void setAgents(List<Agent> agents) {
         this.agents = agents;
-
+        positionsAgents = new Vector<Position>();
         //init positions
         for(Agent agent :agents) {
             positionsAgents.add(agent.getId(), new Position(agent.getX(), agent.getY()));
@@ -67,28 +69,34 @@ public class Grid extends Observable {
 
     public boolean moveTo(Agent agent, int x, int y) {
 
-        Position newPosition = new Position(x, y);
-        synchronized (tab) {
-            for (Position position : positionsAgents) {
-                if (newPosition == position) {
-                    return false;
+        if (x<50 && y<50) {
+
+
+            Position newPosition = new Position(x, y);
+            synchronized (tab) {
+                for (Position position : positionsAgents) {
+                    if (newPosition == position) {
+                        return false;
+                    }
                 }
+
+                positionsAgents.set(agent.getId(), newPosition);
+                return true;
             }
-
-            positionsAgents.set(agent.getId(), newPosition);
-            return true;
         }
-
+        return false;
     }
 
-    public ArrayList getNeighbourhood(int x, int y) {
-        ArrayList<AtomicInteger> list = new ArrayList<AtomicInteger>();
+    public HashMap getNeighbourhood(int x, int y) {
+
+        HashMap<Position, AtomicInteger> map = new HashMap<Position, AtomicInteger>();
         synchronized (tab) {
-            list.add(tab.get(y+1).get(x));
-            list.add(tab.get(y).get(x+1));
-            list.add(tab.get(y-1).get(x));
-            list.add(tab.get(y).get(x-1));
-            return list;
+            map.put(new Position(y+1, x), tab.get(y+1).get(x));
+            map.put(new Position(y, x+1), tab.get(y).get(x+1));
+            map.put(new Position(y-1, x), tab.get(y-1).get(x));
+            map.put(new Position(y, x-1), tab.get(y).get(x-1));
+
+            return map;
         }
     }
 
@@ -114,6 +122,7 @@ public class Grid extends Observable {
     }
 
     public AtomicInteger get(int x, int y) {
+        System.out.println("x : "+x+" y : "+y);
         synchronized (tab) {
             return tab.get(y).get(x);
         }

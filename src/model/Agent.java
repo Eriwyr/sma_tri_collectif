@@ -17,13 +17,13 @@ public class Agent implements Runnable{
     private int sizeOfMemory;
     private boolean stop;
 
-    public Agent(int id, int x, int y, AtomicInteger currentObject, int sizeOfMemory) {
+    public Agent(int id, int x, int y, int sizeOfMemory) {
         grid = Grid.getInstance();
 
         this.id = id;
         this.x = x;
         this.y = y;
-        this.currentObject = currentObject;
+        this.currentObject = new AtomicInteger(0);
         this.sizeOfMemory = sizeOfMemory;
         this.memory = new ArrayList<>();
         this.stop=false;
@@ -181,6 +181,12 @@ public class Agent implements Runnable{
 
     @Override
     public void run() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         while(!stop){
             goToRandomDirection();
