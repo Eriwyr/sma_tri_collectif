@@ -1,15 +1,12 @@
-import javafx.geometry.Pos;
+package model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Grid {
+public class Grid extends Observable {
 
     private static Grid instance;
 
@@ -19,7 +16,9 @@ public class Grid {
 
     private final Vector<Vector<AtomicInteger>> tab = new Vector<Vector<AtomicInteger>>(50);
 
-    private Grid(List<Agent> agents) {
+    private List<Agent> agents ;
+
+    private Grid() {
         // init grid
         for (int i =0; i<50; i++) {
             tab.set(i, new Vector<>(50));
@@ -27,6 +26,13 @@ public class Grid {
                 tab.get(j).set(i, new AtomicInteger(0));
             }
         }
+
+        getInstance().setChanged();
+        getInstance().notifyObservers();
+    }
+
+    public void setAgents(List<Agent> agents) {
+        this.agents = agents;
 
         //init positions
         for(Agent agent :agents) {
@@ -81,11 +87,28 @@ public class Grid {
         synchronized (tab) {
                 tab.get(y).set(x, a);
             }
+        getInstance().setChanged();
+        getInstance().notifyObservers();
         }
 
     public void take(int x, int y) {
         synchronized (tab) {
             tab.get(y).set(x, new AtomicInteger(0));
         }
+        getInstance().setChanged();
+        getInstance().notifyObservers();
     }
+
+
+    public static void addNewObserver(Observer observer) {
+        getInstance().addObserver(observer);
+    }
+
+    public AtomicInteger get(int x, int y) {
+        synchronized (tab) {
+            return tab.get(y).get(x);
+        }
+
+    }
+
 }
