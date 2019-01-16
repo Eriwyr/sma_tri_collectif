@@ -77,15 +77,17 @@ public class Grid extends Observable {
 
 
             Position newPosition = new Position(x, y);
+
             synchronized (tab) {
                 for (Position position : positionsAgents) {
                     if (newPosition == position) {
                         return false;
                     }
                 }
-
-                positionsAgents.set(agent.getId(), newPosition);
-                return true;
+                if (tab.get(y).get(x) == new AtomicInteger(0)) {
+                    positionsAgents.set(agent.getId(), newPosition);
+                    return true;
+                }
             }
         }
         return false;
