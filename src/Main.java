@@ -18,9 +18,9 @@ public class Main extends Application {
 
         List<Agent> agents = new ArrayList<Agent>();
         agents.add(new Agent(0, 1, 1, 10, 1, 1));
-        /*agents.add(new Agent(1, 2, 2, 10, 1, 1));
-        agents.add(new Agent(2, 3, 3, 10, 1, 1));
-        agents.add(new Agent(3, 4, 4, 10, 1, 1));*/
+        /*agents.add(new Agent(1, 35, 40, 10, 1, 1));
+        agents.add(new Agent(2, 20, 34, 10, 1, 1));
+        agents.add(new Agent(3, 48, 20, 10, 1, 1));*/
 
 
         grid.setAgents(agents);

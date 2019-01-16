@@ -33,9 +33,7 @@ public class GridView implements Observer {
         //if(slowDown%100 == 0) {
             //GridCase[][] grid = Grid.getGrid();
 
-            gc.setFill(Color.WHITE);
             gc.clearRect(0, 0, 800,800);
-            gc.fillRect(0, 0, 800,800);
 
 
             Vector<Vector<AtomicInteger>> cells = Grid.getTab();
@@ -45,14 +43,14 @@ public class GridView implements Observer {
             for (int i = 0; i< cells.size(); i++) {
                 Vector row = cells.get(i);
                 for (int j = 0; j<row.size(); j++  ) {
-                    cellViews[j][i] = new Cell(i , j , ((AtomicInteger)row.get(j)).get());
+                    cellViews[i][j] = new Cell(i , j , ((AtomicInteger)row.get(j)).get());
                 }
             }
 
             List<Position> positionAgents = Grid.getPositionsAgents();
 
             for (Position positionAgent : positionAgents) {
-                cellViews[positionAgent.getX()][positionAgent.getY()] = new Cell(positionAgent.getX() , positionAgent.getX() , 3);
+                cellViews[positionAgent.getY()][positionAgent.getX()] = new Cell(positionAgent.getX() , positionAgent.getX() , 3);
             }
 
            /* StringBuilder stringBuilder = new StringBuilder();

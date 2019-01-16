@@ -38,7 +38,6 @@ public class Agent implements Runnable{
 
     private void takeObject(){
 
-        System.out.println("memory "+this.memory);
         double bestPp = 0;
         double tmpPp = 0;
         double tmpFp =0;
@@ -54,10 +53,8 @@ public class Agent implements Runnable{
                 tmpFp = calcFp(element.getValue(),neighbourhood );
                 double pp = calcPp(tmpFp);
 
-                System.out.println("pp : "+pp);
 
                 if(tmpPp > bestPp){
-                    System.out.println("tmpPp > bestPp");
                     bestPp  = tmpPp;
                     tmpElement  = element;
                 }
@@ -69,11 +66,9 @@ public class Agent implements Runnable{
                 Position position = getRandomDirection(x, y);
                 AtomicInteger chosen = grid.get(position.getX(), position.getY());
 
-                System.out.println("memory size = 0");
                 if (chosen.get()!= 0 && grid.take(chosen, position.getX(), position.getY())) {
                     currentObject = chosen;
                     addMemoryElement(currentObject);
-                    System.out.println("currentObject " +currentObject);
                 }
             }
             else if(bestPp > random){
@@ -90,10 +85,14 @@ public class Agent implements Runnable{
     public boolean dropObject(){
         double fd = calcFd();
         double pd = calcPd(fd);
+        System.out.println("fd "+fd);
+        System.out.println("pd "+pd);
+
         double random = Math.random();
         Position newPos = null;
 
         if(random>pd){
+            System.out.println("in fi ");
             newPos = getRandomDirection(x,y);
             grid.drop(currentObject , newPos.getX(),getY());
             currentObject = new AtomicInteger(0);
@@ -123,9 +122,14 @@ public class Agent implements Runnable{
     }
 
     private double calcFd(){
+
         ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(grid.getNeighbourhood(x,y).values());
+        System.out.println("valuesList "+valuesList.toString());
+        System.out.println("getNumberOf(valuesList,this.currentObject) "+getNumberOf(valuesList,this.currentObject));
+        System.out.println("(double)this.memory.size() "+(double)this.memory.size());
 
         double fd = getNumberOf(valuesList,this.currentObject)/(double)this.memory.size();
+        
         return  fd;
     }
 
@@ -292,12 +296,12 @@ public class Agent implements Runnable{
 
                 takeObject();
 
-            }/*
+            }
             else {
 
                 dropObject();
 
-            }*/
+            }
         }
 
     }
