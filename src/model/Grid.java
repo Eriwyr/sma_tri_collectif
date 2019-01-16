@@ -1,7 +1,5 @@
 package model;
 
-import javafx.geometry.Pos;
-
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,13 +38,22 @@ public class Grid extends Observable {
             }
         }
 
+
+        Random random = new Random();
+        boolean isPut = false;
+        for (int c = 0; c <200; c++) {
+            //int randomNum = rand.nextInt((max - min) + 1) + min;
+
+            int x = random.nextInt((49)+1);
+            int y =random.nextInt((49)+1);
+            //if(tab.get(y).get)
+
+
+        }
+
         getInstance().setChanged();
         getInstance().notifyObservers();
 
-       /* for (int c = 0; c <200; c++) {
-
-
-        }*/
 
     }
 
@@ -59,15 +66,6 @@ public class Grid extends Observable {
         }
     }
 
-    private void randomInit() {
-        Random random = new Random();
-        List xA = new ArrayList();
-
-        for (int xa = 0; xa<20; xa ++){
-            xA.add(ThreadLocalRandom.current().nextInt(0, 50));
-        }
-    }
-
     public static synchronized Grid getInstance() {
         if (instance == null) {
             instance = new Grid();
@@ -77,7 +75,6 @@ public class Grid extends Observable {
 
     public boolean moveTo(Agent agent, int x, int y) {
         if (x<49 && y<49 && x>0 && y>0) {
-
 
             Position newPosition = new Position(x, y);
 
