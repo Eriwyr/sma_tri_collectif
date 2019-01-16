@@ -1,10 +1,10 @@
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Agent implements Runnable{
 
+    private int id;
     private static Grid grid;
     private int x;
     private int y;
@@ -13,7 +13,10 @@ public class Agent implements Runnable{
     private int sizeOfMemory;
     private boolean stop;
 
-    public Agent(int x, int y, AtomicInteger currentObject, int sizeOfMemory) {
+    public Agent(int id, int x, int y, AtomicInteger currentObject, int sizeOfMemory) {
+        grid = Grid.getInstance();
+
+        this.id = id;
         this.x = x;
         this.y = y;
         this.currentObject = currentObject;
@@ -90,7 +93,7 @@ public class Agent implements Runnable{
     private double calcFd(){
         double fd =0;
 
-        fd= getNumberOf(grid.getNeighbourhood,this.currentObject);
+        fd= getNumberOf(grid.getNeighbourhood(x,y),this.currentObject);
         return  fd;
 
     }
@@ -142,7 +145,7 @@ public class Agent implements Runnable{
     public void run() {
 
         while(!stop){
-            
+
         }
 
     }
