@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Agent {
+public class Agent implements Runnable{
 
     private static Grid grid;
     private int x;
@@ -11,6 +11,7 @@ public class Agent {
     private AtomicInteger currentObject;
     private ArrayList<AtomicInteger> memory;
     private int sizeOfMemory;
+    private boolean stop;
 
     public Agent(int x, int y, AtomicInteger currentObject, int sizeOfMemory) {
         this.x = x;
@@ -18,39 +19,56 @@ public class Agent {
         this.currentObject = currentObject;
         this.sizeOfMemory = sizeOfMemory;
         this.memory = new ArrayList<>();
+        this.stop=false;
     }
 
 
     public boolean takeObject(){
         double fp = calcFp(memory.get(0));
         double random = Math.random();
-
-
-        return random > fp;
+        if(random>fp){
+            grid.take(x,y);
+            return true;
+        }
+        return false;
     }
 
     public boolean dropObject(){
         double fd = calcFd();
         double random = Math.random();
 
-        return random > fd;
+        if(random>fd){
+            grid.drop(x,y,this.currentObject);
+        }
+        return false;
     }
 
     public void moveToEast(){
-        grid.moveToEast();
 
+        if(grid.moveTo(this,x+1,y)){
+            this.x = this.x+1;
+        };
     }
 
     public void moveToWest(){
-        grid.moveToWest();
+
+        if(grid.moveTo(this,x-1,y)){
+            this.x = this.x-1;
+        };
     }
 
     public void moveToNorth(){
-        grid.moveToNorth();
+
+        if(grid.moveTo(this,x,y-1)){
+            this.y = this.y-1;
+        };
     }
 
     public void moveToSouth(){
-        grid.moveToSouth();
+
+        if(grid.moveTo(this,x,y+1)){
+            this.y = this.y+1;
+        };
     }
 
     public static Grid getGrid() {
@@ -118,5 +136,14 @@ public class Agent {
 
     public void setMemory(ArrayList<AtomicInteger> memory) {
         this.memory = memory;
+    }
+
+    @Override
+    public void run() {
+
+        while(!stop){
+            
+        }
+
     }
 }
