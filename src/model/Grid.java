@@ -12,7 +12,7 @@ public class Grid extends Observable {
 
     private static Grid instance;
 
-    private Vector<Position> positionsAgents;
+    private static Vector<Position> positionsAgents;
 
     private Lock lock = new ReentrantLock();
 
@@ -22,6 +22,10 @@ public class Grid extends Observable {
 
 
     private Grid() {
+    }
+
+    public static Vector<Position> getPositionsAgents() {
+        return positionsAgents;
     }
 
     public static void init() {

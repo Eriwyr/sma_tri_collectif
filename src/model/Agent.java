@@ -1,7 +1,10 @@
 
 package model;
 
+import org.w3c.dom.ls.LSInput;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,21 +60,21 @@ public class Agent implements Runnable{
 
         if(grid.moveTo(this,x+1,y)){
             this.x = this.x+1;
-        };
+        }
     }
 
     private void moveToWest(){
 
         if(grid.moveTo(this,x-1,y)){
             this.x = this.x-1;
-        };
+        }
     }
 
     private void moveToNorth(){
 
         if(grid.moveTo(this,x,y-1)){
             this.y = this.y-1;
-        };
+        }
     }
 
     private void moveToSouth(){
@@ -125,22 +128,49 @@ public class Agent implements Runnable{
     }
 
     private void goToRandomDirection(){
-        int random = ThreadLocalRandom.current().nextInt(0, 3);
+        boolean hasChosenDirection = false;
 
-        switch (random){
-            case 0:
-                moveToEast();
-                break;
-            case 1:
-                moveToSouth();
-                break;
-            case 2:
-                moveToWest();
-                break;
-            case 3:
-                moveToNorth();
-                break;
+        while(!hasChosenDirection) {
+            int random = ThreadLocalRandom.current().nextInt(0, 3);
+
+            switch (random){
+                case 0:
+                    if(x<50
+                        && ((AtomicInteger)grid.get(x+1, y)).get()==0
+                        && !Grid.getPositionsAgents().contains(new Position(x+1, y)) ) {
+                        moveToEast();
+                        hasChosenDirection = true;
+                    }
+                    break;
+                case 1:
+                    if( y< 50
+                        && ((AtomicInteger)grid.get(x, y+1)).get()==0
+                        && !Grid.getPositionsAgents().contains(new Position(x, y+1)) ) {
+                        moveToSouth();
+                        hasChosenDirection = true;
+                    }
+
+                    break;
+                case 2:
+                    if(x>0
+                        && ((AtomicInteger)grid.get(x-1, y)).get()==0
+                        && !Grid.getPositionsAgents().contains(new Position(x-1, y)) ) {
+                        moveToWest();
+                        hasChosenDirection = true;
+                    }
+
+                    break;
+                case 3:
+                    if(y<0
+                        && ((AtomicInteger)grid.get(x, y-1)).get()==0
+                        && !Grid.getPositionsAgents().contains(new Position(x, y-1)) ) {
+                        moveToNorth();
+                        hasChosenDirection = true;
+                    }
+                    break;
+            }
         }
+
     }
     
     public int getX() {
