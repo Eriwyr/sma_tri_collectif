@@ -141,6 +141,10 @@ public class Agent implements Runnable{
         this.memory = memory;
     }
 
+    public int getId() {
+        return id;
+    }
+
     @Override
     public void run() {
 
