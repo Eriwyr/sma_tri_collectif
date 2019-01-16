@@ -40,9 +40,13 @@ public class Grid extends Observable {
             }
         }
 
-
         getInstance().setChanged();
         getInstance().notifyObservers();
+
+       /* for (int c = 0; c <200; c++) {
+
+
+        }*/
 
     }
 
@@ -72,8 +76,7 @@ public class Grid extends Observable {
     }
 
     public boolean moveTo(Agent agent, int x, int y) {
-
-        if (x<50 && y<50) {
+        if (x<49 && y<49 && x>0 && y>0) {
 
 
             Position newPosition = new Position(x, y);
@@ -84,12 +87,19 @@ public class Grid extends Observable {
                         return false;
                     }
                 }
-                if (tab.get(y).get(x) == new AtomicInteger(0)) {
+                AtomicInteger cell =tab.get(y).get(x);
+
+
+                if (tab.get(y).get(x).get() == 0) {
                     positionsAgents.set(agent.getId(), newPosition);
+
+                    getInstance().setChanged();
+                    getInstance().notifyObservers();
                     return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -132,7 +142,7 @@ public class Grid extends Observable {
 
     public boolean drop(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            if (tab.get(y).get(y) == new AtomicInteger(0)) {
+            if (tab.get(y).get(y).get() == 0) {
                 tab.get(y).set(x, a);
             } else {
                 return false;
@@ -145,7 +155,7 @@ public class Grid extends Observable {
 
     public boolean take(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            if(a ==tab.get(y).get(y)) {
+            if(tab.get(y).get(y).get() == a.get()) {
                 tab.get(y).set(x, new AtomicInteger(0));
             } else {
                 return false;
@@ -163,7 +173,6 @@ public class Grid extends Observable {
     }
 
     public AtomicInteger get(int x, int y) {
-        System.out.println("x : "+x+" y : "+y);
         synchronized (tab) {
             return tab.get(y).get(x);
         }

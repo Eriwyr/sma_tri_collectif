@@ -49,7 +49,7 @@ public class Agent implements Runnable{
 
         for(Map.Entry<Position,AtomicInteger> element : neighbourhood.entrySet()) {
 
-            if(!element.getValue().equals(new AtomicInteger(0))){
+            if(element.getValue().get() != 0){
                 tmpFp = calcFp(element.getValue());
                 double pp = calcPp(tmpFp);
 
@@ -121,7 +121,7 @@ public class Agent implements Runnable{
     private int getNumberOf(ArrayList<AtomicInteger> listElement, AtomicInteger element){
         int number = 0;
         for (AtomicInteger currentElement:listElement) {
-            if (currentElement.equals(element)){
+            if (currentElement.get() == element.get()){
                 number++;
             }
 
@@ -156,20 +156,18 @@ public class Agent implements Runnable{
     private void goToRandomDirection(){
         boolean hasChosenDirection = false;
 
-        while(!hasChosenDirection) {
             int random = ThreadLocalRandom.current().nextInt(0, 3);
 
             switch (random){
-                case 0:
 
+                case 0:
                     // east
-                    if(x<50
-                        && ((AtomicInteger)grid.get(x+1, y)).get()==0
-                        && !Grid.getPositionsAgents().contains(new Position(x+1, y)) ) {
+                    if( x<49
+                        && grid.get(x+1, y).get() == 0
+                        && !Grid.getPositionsAgents().contains(new Position(x+1, y))) {
 
                         if(grid.moveTo(this,x+1,y)){
                             this.x = this.x+1;
-                            hasChosenDirection = true;
                         }
 
                     }
@@ -177,8 +175,8 @@ public class Agent implements Runnable{
                 case 1:
 
                     // south
-                    if( y< 50
-                        && ((AtomicInteger)grid.get(x, y+1)).get()==0
+                    if( y < 49
+                        && (grid.get(x, y+1)).get()==0
                         && !Grid.getPositionsAgents().contains(new Position(x, y+1)) ) {
 
                         //moveToSouth();
@@ -217,7 +215,7 @@ public class Agent implements Runnable{
                         }
                     }
                     break;
-            }
+
         }
 
     }
@@ -260,17 +258,17 @@ public class Agent implements Runnable{
 
     @Override
     public void run() {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
 
         while(!stop){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             goToRandomDirection();
-
+/*
             if(currentObject== new AtomicInteger(0)){
 
                 takeObject();
@@ -280,7 +278,7 @@ public class Agent implements Runnable{
 
                 dropObject();
 
-            }
+            }*/
         }
 
     }
