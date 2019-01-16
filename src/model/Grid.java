@@ -77,18 +77,44 @@ public class Grid extends Observable {
 
 
             Position newPosition = new Position(x, y);
+
             synchronized (tab) {
                 for (Position position : positionsAgents) {
                     if (newPosition == position) {
                         return false;
                     }
                 }
-
-                positionsAgents.set(agent.getId(), newPosition);
-                return true;
+                if (tab.get(y).get(x) == new AtomicInteger(0)) {
+                    positionsAgents.set(agent.getId(), newPosition);
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    public HashMap getNeighbourhoodTake(int x, int y ) {
+        HashMap<Position, AtomicInteger> map = new HashMap<Position, AtomicInteger>();
+        synchronized (tab) {
+            //north
+            map.put(new Position(y-1, x), tab.get(y+1).get(x));
+            // north - east
+            map.put(new Position(y-1, x+1), tab.get(y-1).get(x+1));
+            // east
+            map.put(new Position(y, x+1), tab.get(y).get(x+1));
+            // south - east
+            map.put(new Position(y+1, x+1), tab.get(y+1).get(x+1));
+            // south
+            map.put(new Position(y+1, x), tab.get(y+1).get(x));
+            // south - west
+            map.put(new Position(y+1, x-1), tab.get(y+1).get(x-1));
+            // west
+            map.put(new Position(y, x-1), tab.get(y).get(x-1));
+            //north - west
+            map.put(new Position(y-1, x-1), tab.get(y-1).get(x-1));
+
+            return map;
+        }
     }
 
     public HashMap getNeighbourhood(int x, int y) {
