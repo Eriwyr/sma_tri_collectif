@@ -72,6 +72,7 @@ public class Agent implements Runnable{
         if(random>pd){
             newPos = getRandomDirection(x,y);
             grid.drop(currentObject , newPos.getX(),getY());
+            currentObject = new AtomicInteger(0);
             return true;
         }
 
@@ -99,7 +100,7 @@ public class Agent implements Runnable{
     private double calcFd(){
         ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(grid.getNeighbourhood(x,y).values());
 
-        double fd= getNumberOf(valuesList,this.currentObject)/(double)this.memory.size();
+        double fd = getNumberOf(valuesList,this.currentObject)/(double)this.memory.size();
         return  fd;
     }
 
@@ -264,7 +265,7 @@ public class Agent implements Runnable{
 
             goToRandomDirection();
 
-            if(currentObject!= new AtomicInteger(0)){
+            if(currentObject== new AtomicInteger(0)){
 
                 takeObject();
 
