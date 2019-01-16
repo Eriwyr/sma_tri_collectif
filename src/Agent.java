@@ -1,5 +1,6 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Agent implements Runnable{
@@ -41,33 +42,33 @@ public class Agent implements Runnable{
         double random = Math.random();
 
         if(random>fd){
-            grid.drop(x,y,this.currentObject);
+            grid.drop(this.currentObject, x, y);
         }
         return false;
     }
 
-    public void moveToEast(){
+    private void moveToEast(){
 
         if(grid.moveTo(this,x+1,y)){
             this.x = this.x+1;
         };
     }
 
-    public void moveToWest(){
+    private void moveToWest(){
 
         if(grid.moveTo(this,x-1,y)){
             this.x = this.x-1;
         };
     }
 
-    public void moveToNorth(){
+    private void moveToNorth(){
 
         if(grid.moveTo(this,x,y-1)){
             this.y = this.y-1;
         };
     }
 
-    public void moveToSouth(){
+    private void moveToSouth(){
 
         if(grid.moveTo(this,x,y+1)){
             this.y = this.y+1;
@@ -109,6 +110,32 @@ public class Agent implements Runnable{
         return number;
     }
 
+    private void addMemoryElement(AtomicInteger element){
+        if(memory.size()==10){
+            memory.remove(memory.size()-1);
+        }
+        memory.add(0,element);
+
+    }
+
+    private void goToRandomDirection(){
+        int random = ThreadLocalRandom.current().nextInt(0, 3);
+
+        switch (random){
+            case 0:
+                moveToEast();
+                break;
+            case 1:
+                moveToSouth();
+                break;
+            case 2:
+                moveToWest();
+                break;
+            case 3:
+                moveToNorth();
+                break;
+        }
+    }
     public int getX() {
         return x;
     }
@@ -149,6 +176,8 @@ public class Agent implements Runnable{
     public void run() {
 
         while(!stop){
+            goToRandomDirection();
+            
 
         }
 
