@@ -1,0 +1,1 @@
+sma_tri_collectif
