@@ -33,24 +33,30 @@ public class Agent implements Runnable{
     }
 
 
-    public boolean takeObject(){
+    private void takeObject(){
 
-        double random = Math.random();
-        double bestFp = 0;
-        double tmpFp = 0;
+        double bestPp = 0;
+        double tmpPp = 0;
+        double tmpFp =0;
 
         Map.Entry<Position,AtomicInteger> tmpElement = null;
         HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhoodTake(x,y);
 
         for(Map.Entry<Position,AtomicInteger> element : neighbourhood.entrySet()) {
+
             if(!element.getValue().equals(new AtomicInteger(0))){
                 tmpFp = calcFp(element.getValue());
-                if(tmpFp > bestFp){
-                    bestFp  = tmpFp;
+                double pp = calcPp(tmpFp);
+
+                if(tmpPp > bestPp){
+                    bestPp  = tmpPp;
                     tmpElement  = element;
                 }
             }
-            if(bestFp > random){
+
+            double random = Math.random();
+
+            if(bestPp > random){
                 if(grid.take(tmpElement.getValue(), tmpElement.getKey().getX(), tmpElement.getKey().getY())){
                     currentObject = tmpElement.getValue();
                 }
@@ -67,6 +73,7 @@ public class Agent implements Runnable{
             
         }
 
+        return true;
     }
 
 
