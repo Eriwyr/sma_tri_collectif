@@ -1,12 +1,9 @@
 
 package model;
 
-import javafx.geometry.Pos;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,7 +36,7 @@ public class Agent implements Runnable{
         double bestFp = 0;
         double tmpFp = 0;
         Map.Entry<Position,AtomicInteger> tmpElement = null;
-        HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhood(x,y);
+        HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhoodTake(x,y);
 
         for(Map.Entry<Position,AtomicInteger> element : neighbourhood.entrySet()) {
             if(!element.getValue().equals(new AtomicInteger(0))){
@@ -58,8 +55,17 @@ public class Agent implements Runnable{
     }
 
     public boolean dropObject(){
-        double fd = calcFd();
+
         double random = Math.random();
+        double fd = 0;
+
+        fd = calcFd();
+
+        if(fd>random){
+
+        }
+
+
 
         if(random>fd){
             grid.drop(this.currentObject, x, y);
@@ -132,11 +138,27 @@ public class Agent implements Runnable{
     }
 
     private void addMemoryElement(AtomicInteger element){
-        if(memory.size()==10){
+        if(memory.size()==sizeOfMemory){
             memory.remove(memory.size()-1);
         }
         memory.add(0,element);
 
+    }
+
+    private Position getRandomDirection(int x, int y) {
+        int random = ThreadLocalRandom.current().nextInt(0, 3);
+
+        switch (random) {
+            case 0:
+                return new Position(x + 1, y);
+            case 1:
+                return new Position(x + 1, y);
+            case 2:
+                return new Position(x + 1, y);
+            case 3:
+                return new Position(x + 1, y);
+        }
+        return null;
     }
 
     private void goToRandomDirection(){
