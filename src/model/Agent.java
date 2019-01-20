@@ -4,18 +4,26 @@ package model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Agent implements Runnable{
+    private Lock lock = new ReentrantLock();
 
+
+    private int gridHeight =50;
+    private int gridWidth =50;
     private int id;
     private static Grid grid;
     private int x;
     private int y;
     private int kP;
     private int kM;
+
+    private int sierNeighbourhood = 2;
+
     private AtomicInteger currentObject;
     private ArrayList<AtomicInteger> memory;
     private int sizeOfMemory;
@@ -35,109 +43,98 @@ public class Agent implements Runnable{
         this.kP = kP;
     }
 
-
     private void takeObject(){
+        lock.lock();
+        try {
 
-        double bestPp = 0;
-        double tmpPp = 0;
-        double tmpFp =0;
+            double bestPp = 0;
+            double f;
+            double pp;
 
-        Map.Entry<Position,AtomicInteger> tmpElement = null;
-        HashMap<Position,AtomicInteger> neighbourhood = grid.getNeighbourhoodTake(x,y);
+            Map.Entry<Position, AtomicInteger> bestElement = null;
+            HashMap<Position, AtomicInteger> neighbourhood = grid.getCompleteNeighbourhood(x, y);
 
-        int count = 0;
-        for(Map.Entry<Position,AtomicInteger> element : neighbourhood.entrySet()) {
+            for (Map.Entry<Position, AtomicInteger> element : neighbourhood.entrySet()) {
+                
+                if (element.getValue().get() != 0) {
 
-            if(element.getValue().get() != 0){
+                    f = calcF(element.getValue(), neighbourhood);
+                    pp = calcPp(f);
 
-                tmpFp = calcFp(element.getValue(),neighbourhood );
-                double pp = calcPp(tmpFp);
+                    if (pp > bestPp) bestPp = pp;
 
-
-                if(tmpPp > bestPp){
-                    bestPp  = tmpPp;
-                    tmpElement  = element;
+                    if (f > bestPp) {
+                        bestPp = f;
+                        bestElement = element;
+                    }
                 }
+
             }
 
             double random = Math.random();
 
-            if( this.memory.size() == 0 ){
-                Position position = getRandomDirection(x, y);
-                AtomicInteger chosen = grid.get(position.getX(), position.getY());
+            if (bestPp > random) {
 
-                if (chosen.get()!= 0 && grid.take(chosen, position.getX(), position.getY())) {
-                    currentObject = chosen;
-                    addMemoryElement(currentObject);
+                assert bestElement != null;
+//                System.out.println("I have " + currentObject.get() + " and I a trying to get " + bestElement);
+
+                if (grid.take(bestElement.getValue(), bestElement.getKey().getX(), bestElement.getKey().getY())) {
+//                    System.out.println("score !");
+                    currentObject = bestElement.getValue();
+                } else {
+//                    System.out.println("could not get");
                 }
             }
-            else if(bestPp > random){
-
-                if(grid.take(tmpElement.getValue(), tmpElement.getKey().getX(), tmpElement.getKey().getY())){
-                    currentObject = tmpElement.getValue();
-                    addMemoryElement(currentObject);
-                }
-            }
-            count++;
+//            System.out.println("===================================");
+        } finally {
+            lock.unlock();
         }
     }
 
-    public boolean dropObject(){
-        double fd = calcFd();
-        double pd = calcPd(fd);
-        System.out.println("fd "+fd);
-        System.out.println("pd "+pd);
+    private void dropObject(){
+        lock.lock();
+        try {
+//            System.out.println("=============== dropObject() =============== ");
 
-        double random = Math.random();
-        Position newPos = null;
+            double f = calcF(currentObject, grid.getCompleteNeighbourhood(x, y));
 
-        if(random>pd){
-            System.out.println("in fi ");
-            newPos = getRandomDirection(x,y);
-            grid.drop(currentObject , newPos.getX(),getY());
-            currentObject = new AtomicInteger(0);
-            return true;
+            double pd = calcPd(f);
+
+            double random = Math.random();
+            Position newPos;
+
+            if (random > pd) {
+                newPos = getRandomDirection(x, y);
+
+//                System.out.println("I am at " + x + " " + y + " and I am tring to drop " + currentObject + "at " + newPos);
+                assert newPos != null;
+
+                if (isOnEdge(newPos.getX(), newPos.getY())
+                        && grid.drop(currentObject, newPos.getX(), getY())) {
+//                    System.out.println("I did it !");
+                    currentObject = new AtomicInteger(0);
+
+                } else {
+//                    System.out.println("could not drop");
+                }
+
+            }
+        } finally {
+            lock.unlock();
         }
 
-        return false;
     }
 
 
+    private double calcF(AtomicInteger gridElement, HashMap<Position,AtomicInteger> map){
+        ArrayList<AtomicInteger> valuesList = new ArrayList<>(map.values());
 
-    public static Grid getGrid() {
-        return grid;
+        return getNumberOf(valuesList,gridElement) / (double)(valuesList.size()-getNumberOf(valuesList, new AtomicInteger(0)));
     }
 
-    public static void setGrid(Grid grid) {
-        Agent.grid = grid;
-    }
-
-    private double calcFp(AtomicInteger gridElement, HashMap<Position,AtomicInteger> map){
-        ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(map.values());
-
-        double fp = getNumberOf(valuesList,gridElement) / (double)this.memory.size();
-
-        return fp;
-
-    }
-
-    private double calcFd(){
-
-        ArrayList<AtomicInteger> valuesList = new ArrayList<AtomicInteger>(grid.getNeighbourhood(x,y).values());
-        System.out.println("valuesList "+valuesList.toString());
-        System.out.println("getNumberOf(valuesList,this.currentObject) "+getNumberOf(valuesList,this.currentObject));
-        System.out.println("(double)this.memory.size() "+(double)this.memory.size());
-
-        double fd = getNumberOf(valuesList,this.currentObject)/(double)this.memory.size();
-        
-        return  fd;
-    }
 
     private double calcPp(double fp){
-        if(this.memory.size() == 0) {
-            return Math.random();
-        }
-        return Math.pow(fp/(kP+fp),2);
+        return Math.pow(kP/(kP+fp),2);
     }
 
     private double calcPd(double fd){
@@ -156,19 +153,12 @@ public class Agent implements Runnable{
         return number;
     }
 
-    private void addMemoryElement(AtomicInteger element){
-        if(memory.size()==sizeOfMemory){
-            memory.remove(memory.size()-1);
-        }
-        memory.add(0,element);
-
-    }
-
     private Position getRandomDirection(int x, int y) {
         int random = ThreadLocalRandom.current().nextInt(0, 4);
 
         switch (random) {
             case 0:
+
                 return new Position(x + 1, y);
             case 1:
                 return new Position(x , y+1);
@@ -176,103 +166,48 @@ public class Agent implements Runnable{
                 return new Position(x - 1, y);
             case 3:
                 return new Position(x , y-1);
+            default:
+                return null;
         }
-        return null;
     }
 
-    private void goToRandomDirection(){
+    private boolean isOnEdge(int x, int y) {
+        return (y<gridHeight-1 && y>0 && x<gridWidth-1 && x>0);
+    }
+    private void goToRandomDirection() {
+        lock.lock();
+        try {
 
-            int random = ThreadLocalRandom.current().nextInt(0, 4);
 
-            switch (random){
+//            System.out.println("================ goToRandomDirection() ================");
+            Position newPosition = getRandomDirection(x, y);
+            assert newPosition != null;
 
-                case 0:
-                    // east
-                    if( x<49
-                        && grid.get(x+1, y).get() == 0
-                        && !Grid.getPositionsAgents().contains(new Position(x+1, y))) {
+//            System.out.println("I am at " + x + " " + y + ", trying to get to " + newPosition + ", where ther is " + grid.get(newPosition.getX(), newPosition.getY()));
 
-                        if(grid.moveTo(this,x+1,y)){
-                            this.x = this.x+1;
-                        }
+            if (isOnEdge(x, y)
+                    && grid.get(newPosition.getX(), newPosition.getY()).get() == 0
+                    && !Grid.getPositionsAgents().contains(new Position(newPosition.getX(), newPosition.getY()))) {
 
-                    }
-                    break;
-                case 1:
+                if (grid.moveTo(this, newPosition.getX(), newPosition.getY())) {
+                    this.x = newPosition.getX();
+                    this.y = newPosition.getY();
+                }
 
-                    // south
-                    if( y < 49
-                        && (grid.get(x, y+1)).get()==0
-                        && !Grid.getPositionsAgents().contains(new Position(x, y+1)) ) {
-
-                        //moveToSouth();
-                        if(grid.moveTo(this,x,y+1)){
-                            this.y = this.y+1;
-                        }
-                    }
-
-                    break;
-                case 2:
-                    //west
-                    if(x>0
-                        && ((AtomicInteger)grid.get(x-1, y)).get()==0
-                        && !Grid.getPositionsAgents().contains(new Position(x-1, y)) ) {
-
-                        // moveToWest();
-                        if(grid.moveTo(this,x-1,y)){
-                            this.x = this.x-1;
-                        }
-
-                    }
-
-                    break;
-                case 3:
-                    //north
-                    if(y>0
-                        && ((AtomicInteger)grid.get(x, y-1)).get()==0
-                        && !Grid.getPositionsAgents().contains(new Position(x, y-1)) ) {
-
-                        //moveToNorth();
-                        if(grid.moveTo(this,x,y-1)){
-                            this.y = this.y-1;
-                        }
-                    }
-                    break;
-
+            }
+//            System.out.println("================================================");
+        } finally {
+            lock.unlock();
         }
-
     }
 
-    int getX() {
+
+    public int getX() {
         return x;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    int getY() {
+    public int getY() {
         return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public AtomicInteger getCurrentObject() {
-        return currentObject;
-    }
-
-    public void setCurrentObject(AtomicInteger currentObject) {
-        this.currentObject = currentObject;
-    }
-
-    public ArrayList<AtomicInteger> getMemory() {
-        return memory;
-    }
-
-    public void setMemory(ArrayList<AtomicInteger> memory) {
-        this.memory = memory;
     }
 
     public int getId() {
@@ -285,7 +220,7 @@ public class Agent implements Runnable{
 
         while(!stop){
             try {
-                Thread.sleep(100);
+                Thread.sleep(80);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

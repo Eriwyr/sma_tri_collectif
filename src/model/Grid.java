@@ -10,16 +10,23 @@ public class Grid extends Observable {
 
     private static Grid instance;
 
+    private int gridHeight =50;
+    private int gridWidth =50;
+
     private static Vector<Position> positionsAgents;
 
     private Lock lock = new ReentrantLock();
 
     private static Vector<Vector<AtomicInteger>> tab = new Vector<>(50);
 
-    private List<Agent> agents ;
+    private static List<Agent> agents ;
 
 
     private Grid() {
+    }
+
+    public static List<Agent> getAgents() {
+        return agents;
     }
 
     public static Vector<Position> getPositionsAgents() {
@@ -61,6 +68,10 @@ public class Grid extends Observable {
             }
         }
 
+        for (int z = 0; z<10; z++) {
+            tab.get(0).set(z,new AtomicInteger(1));
+        }
+
         getInstance().setChanged();
         getInstance().notifyObservers();
 
@@ -100,6 +111,7 @@ public class Grid extends Observable {
 
                     getInstance().setChanged();
                     getInstance().notifyObservers();
+//                    System.out.println("finally moving to "+newPosition);
                     return true;
                 }
             }
@@ -108,61 +120,66 @@ public class Grid extends Observable {
         return false;
     }
 
-    public HashMap getNeighbourhoodTake(int x, int y ) {
+    HashMap<Position,AtomicInteger> getCompleteNeighbourhood(int x, int y) {
         HashMap<Position, AtomicInteger> map = new HashMap<Position, AtomicInteger>();
         synchronized (tab) {
+            if(x<gridWidth-1) {
+                // east
+                map.put(new Position(x+1, y), tab.get(y).get(x+1));
+                // north - east
+                if(y>0) map.put(new Position(x+1, y-1), tab.get(y-1).get(x+1));
+
+                // south - east
+                if ( y<gridHeight-1) map.put(new Position(x+1, y+1), tab.get(y+1).get(x+1));
+
+            }
             //north
-            map.put(new Position(y-1, x), tab.get(y-1).get(x));
-            // north - east
-            map.put(new Position(y-1, x+1), tab.get(y-1).get(x+1));
-            // east
-            map.put(new Position(y, x+1), tab.get(y).get(x+1));
-            // south - east
-            map.put(new Position(y+1, x+1), tab.get(y+1).get(x+1));
+            if(y>0)
+                map.put(new Position(x, y-1), tab.get(y-1).get(x));
+
+
             // south
-            map.put(new Position(y+1, x), tab.get(y+1).get(x));
-            // south - west
-            map.put(new Position(y+1, x-1), tab.get(y+1).get(x-1));
+            if(y<gridWidth)
+                map.put(new Position( x,y+1), tab.get(y+1).get(x));
+
+
             // west
-            map.put(new Position(y, x-1), tab.get(y).get(x-1));
-            //north - west
-            map.put(new Position(y-1, x-1), tab.get(y-1).get(x-1));
+            if(x>0) {
+                map.put(new Position(x-1, y), tab.get(y).get(x-1));
+
+                // south - west
+                if (y<gridHeight-1) map.put(new Position(x-1, y+1), tab.get(y+1).get(x-1));
+
+                //north - west
+                if(y>0) map.put(new Position(x-1, y-1), tab.get(y-1).get(x-1));
+
+            }
+
+
 
             return map;
         }
     }
 
-    public HashMap getNeighbourhood(int x, int y) {
 
-        HashMap<Position, AtomicInteger> map = new HashMap<Position, AtomicInteger>();
+    boolean drop(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            map.put(new Position(y+1, x), tab.get(y+1).get(x));
-            map.put(new Position(y, x+1), tab.get(y).get(x+1));
-            map.put(new Position(y-1, x), tab.get(y-1).get(x));
-            map.put(new Position(y, x-1), tab.get(y).get(x-1));
 
-            return map;
-        }
-    }
-
-    public boolean drop(AtomicInteger a, int x, int y) {
-        System.out.println("dropped");
-        synchronized (tab) {
             if (tab.get(y).get(x).get() == 0) {
                 tab.get(y).set(x, a);
             } else {
                 return false;
             }
-            getInstance().setChanged();
-            getInstance().notifyObservers();
-            return true;
         }
+        getInstance().setChanged();
+        getInstance().notifyObservers();
+        return true;
     }
 
-    public boolean take(AtomicInteger a, int x, int y) {
+    boolean take(AtomicInteger a, int x, int y) {
         synchronized (tab) {
-            if (tab.get(y).get(x).get() == a.get()) {
 
+            if (tab.get(y).get(x).get() == a.get()) {
                 tab.get(y).set(x, new AtomicInteger(0));
 
             } else {
@@ -171,6 +188,7 @@ public class Grid extends Observable {
         }
         getInstance().setChanged();
         getInstance().notifyObservers();
+
         return true;
 
     }
@@ -180,7 +198,7 @@ public class Grid extends Observable {
         getInstance().addObserver(observer);
     }
 
-    public AtomicInteger get(int x, int y) {
+    AtomicInteger get(int x, int y) {
         synchronized (tab) {
             return tab.get(y).get(x);
         }
