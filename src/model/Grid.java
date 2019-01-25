@@ -1,5 +1,8 @@
 package model;
 
+import javafx.geometry.Pos;
+import sun.jvm.hotspot.runtime.posix.POSIXSignals;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,9 +71,9 @@ public class Grid extends Observable {
             }
         }
 
-        for (int z = 0; z<10; z++) {
+/*        for (int z = 0; z<10; z++) {
             tab.get(0).set(z,new AtomicInteger(1));
-        }
+        }*/
 
         getInstance().setChanged();
         getInstance().notifyObservers();
@@ -111,7 +114,6 @@ public class Grid extends Observable {
 
                     getInstance().setChanged();
                     getInstance().notifyObservers();
-//                    System.out.println("finally moving to "+newPosition);
                     return true;
                 }
             }
@@ -201,6 +203,13 @@ public class Grid extends Observable {
     AtomicInteger get(int x, int y) {
         synchronized (tab) {
             return tab.get(y).get(x);
+        }
+
+    }
+
+    AtomicInteger get(Position position) {
+        synchronized (tab) {
+            return tab.get(position.getY()).get(position.getX());
         }
 
     }

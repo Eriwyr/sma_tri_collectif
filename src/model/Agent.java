@@ -1,9 +1,9 @@
-
 package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -12,38 +12,33 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Agent implements Runnable{
     private Lock lock = new ReentrantLock();
 
-
+    private int scope =2;
     private int gridHeight =50;
     private int gridWidth =50;
     private int id;
     private static Grid grid;
     private int x;
     private int y;
-    private int kP;
-    private int kM;
+    private int kP =  2;
+    private float kM = (float) 0.5;
 
-    private int sierNeighbourhood = 2;
 
     private AtomicInteger currentObject;
-    private ArrayList<AtomicInteger> memory;
-    private int sizeOfMemory;
     private boolean stop;
 
-    public Agent(int id, int x, int y, int sizeOfMemory, int kM, int kP) {
+    public Agent(int id, int x, int y) {
         grid = Grid.getInstance();
 
         this.id = id;
         this.x = x;
         this.y = y;
         this.currentObject = new AtomicInteger(0);
-        this.sizeOfMemory = sizeOfMemory;
-        this.memory = new ArrayList<>();
         this.stop=false;
-        this.kM = kM;
-        this.kP = kP;
     }
 
     private void takeObject(){
+
+        Position positionToObserve;
         lock.lock();
         try {
 
@@ -52,40 +47,59 @@ public class Agent implements Runnable{
             double pp;
 
             Map.Entry<Position, AtomicInteger> bestElement = null;
-            HashMap<Position, AtomicInteger> neighbourhood = grid.getCompleteNeighbourhood(x, y);
+            HashMap<Position, AtomicInteger> neighbourhood = observeNeighbourhood(null);
 
             for (Map.Entry<Position, AtomicInteger> element : neighbourhood.entrySet()) {
-                
+
+                if (bestElement == null) bestElement = element;
+
                 if (element.getValue().get() != 0) {
 
-                    f = calcF(element.getValue(), neighbourhood);
+                    positionToObserve = new Position(element.getKey().getX(), element.getKey().getY());
+                    f = calcF(element.getValue(), observeNeighbourhood(positionToObserve));
                     pp = calcPp(f);
-
-                    if (pp > bestPp) bestPp = pp;
-
-                    if (f > bestPp) {
-                        bestPp = f;
+                    if (pp > bestPp) {
+                        bestPp = pp;
                         bestElement = element;
                     }
                 }
-
             }
 
-            double random = Math.random();
+            HashMap<Position, AtomicInteger> possibilities = new HashMap<>();
 
-            if (bestPp > random) {
+            if(bestElement.getValue().get() != 0) {
 
-                assert bestElement != null;
-//                System.out.println("I have " + currentObject.get() + " and I a trying to get " + bestElement);
+                for (Map.Entry<Position, AtomicInteger> element : neighbourhood.entrySet()) {
+                    if(element.getValue().get() == bestElement.getValue().get())
 
-                if (grid.take(bestElement.getValue(), bestElement.getKey().getX(), bestElement.getKey().getY())) {
-//                    System.out.println("score !");
-                    currentObject = bestElement.getValue();
-                } else {
-//                    System.out.println("could not get");
+                        possibilities.put(element.getKey(), element.getValue());
+
+                }
+
+                Random rand = new Random();
+
+                int r = rand.nextInt(possibilities.size());
+                int count =0;
+
+                for (Map.Entry<Position, AtomicInteger> element : possibilities.entrySet()) {
+                    if (count == r) {
+                        bestElement = element;
+
+                        break;
+                    } else count ++;
+                }
+
+
+
+                double random = Math.random();
+
+                if (bestPp > random) {
+                    if (grid.take(bestElement.getValue(), bestElement.getKey().getX(), bestElement.getKey().getY())) {
+                        currentObject = bestElement.getValue();
+                    }
                 }
             }
-//            System.out.println("===================================");
+
         } finally {
             lock.unlock();
         }
@@ -94,30 +108,28 @@ public class Agent implements Runnable{
     private void dropObject(){
         lock.lock();
         try {
-//            System.out.println("=============== dropObject() =============== ");
+            Position newPos;
+            newPos = getRandomDirection(this.x, this.y);
 
-            double f = calcF(currentObject, grid.getCompleteNeighbourhood(x, y));
+            HashMap map = observeNeighbourhood(newPos);
 
+            double f = calcF(currentObject, map);
             double pd = calcPd(f);
 
             double random = Math.random();
-            Position newPos;
 
-            if (random > pd) {
-                newPos = getRandomDirection(x, y);
 
-//                System.out.println("I am at " + x + " " + y + " and I am tring to drop " + currentObject + "at " + newPos);
+            if (random < pd) {
+
+
+
                 assert newPos != null;
 
-                if (isOnEdge(newPos.getX(), newPos.getY())
+                if (isInGrid(newPos)
                         && grid.drop(currentObject, newPos.getX(), getY())) {
-//                    System.out.println("I did it !");
                     currentObject = new AtomicInteger(0);
 
-                } else {
-//                    System.out.println("could not drop");
                 }
-
             }
         } finally {
             lock.unlock();
@@ -129,7 +141,8 @@ public class Agent implements Runnable{
     private double calcF(AtomicInteger gridElement, HashMap<Position,AtomicInteger> map){
         ArrayList<AtomicInteger> valuesList = new ArrayList<>(map.values());
 
-        return getNumberOf(valuesList,gridElement) / (double)(valuesList.size()-getNumberOf(valuesList, new AtomicInteger(0)));
+        double f= getNumberOf(valuesList,gridElement) / (double)(valuesList.size());
+        return f;
     }
 
 
@@ -171,21 +184,23 @@ public class Agent implements Runnable{
         }
     }
 
-    private boolean isOnEdge(int x, int y) {
-        return (y<gridHeight-1 && y>0 && x<gridWidth-1 && x>0);
+    private boolean isInGrid(int x, int y) {
+        return (y<gridHeight && y>=0 && x<gridWidth && x>=0);
     }
+
+    private boolean isInGrid(Position position) {
+        return (position.getY()<gridHeight && position.getY()>=0 && position.getX()<gridWidth && position.getX()>=0);
+    }
+
     private void goToRandomDirection() {
         lock.lock();
         try {
 
 
-//            System.out.println("================ goToRandomDirection() ================");
             Position newPosition = getRandomDirection(x, y);
             assert newPosition != null;
 
-//            System.out.println("I am at " + x + " " + y + ", trying to get to " + newPosition + ", where ther is " + grid.get(newPosition.getX(), newPosition.getY()));
-
-            if (isOnEdge(x, y)
+            if (isInGrid(newPosition)
                     && grid.get(newPosition.getX(), newPosition.getY()).get() == 0
                     && !Grid.getPositionsAgents().contains(new Position(newPosition.getX(), newPosition.getY()))) {
 
@@ -195,10 +210,30 @@ public class Agent implements Runnable{
                 }
 
             }
-//            System.out.println("================================================");
         } finally {
             lock.unlock();
         }
+    }
+
+    public HashMap<Position, AtomicInteger>  observeNeighbourhood(Position p) {
+        if (p == null) p = new Position(this.x, this.y);
+
+
+        Position position;
+        HashMap<Position, AtomicInteger>  neighbourhood = new HashMap<>();
+
+        for (int x=scope*-1; x<scope+1; x++) {
+            for (int y=scope*-1; y<scope+1; y++) {
+
+                position = new Position(p.getX()+x, p.getY()+y);
+
+                if(isInGrid(position.getX(), position.getY()) && (x!=0 || y!=0)) {
+                    neighbourhood.put(position, grid.get(position));
+                }
+            }
+        }
+
+        return neighbourhood;
     }
 
 
@@ -216,11 +251,9 @@ public class Agent implements Runnable{
 
     @Override
     public void run() {
-
-
         while(!stop){
             try {
-                Thread.sleep(80);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -228,7 +261,6 @@ public class Agent implements Runnable{
             goToRandomDirection();
 
             if(currentObject.get() == 0 ){
-
                 takeObject();
 
             }
